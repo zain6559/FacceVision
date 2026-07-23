@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/lib/i18n';
+import AdaptiveAgentPanel from '../components/dashboard/AdaptiveAgentPanel';
 
 interface FeedItem {
   id: string;
@@ -15,7 +16,7 @@ interface FeedItem {
 export default function Monitoring() {
   const { t } = useI18n();
 
-  // Job active/throttle states
+  // Ingestion active/throttle states
   const [cdnActive, setCdnActive] = useState(true);
   const [waybackActive, setWaybackActive] = useState(true);
   const [searchActive, setSearchActive] = useState(true);
@@ -38,16 +39,13 @@ export default function Monitoring() {
         return;
       }
 
-      // Calculate simulated faces/sec rate based on throttle slider and active workers
       const activeCount = [cdnActive, waybackActive, searchActive].filter(Boolean).length;
       const rate = parseFloat(((activeCount * 1.5) * (throttle / 100)).toFixed(1));
       setIngestedRate(rate);
 
       if (rate > 0) {
-        // Increment knowledge base counter
         setIngestedCount(prev => prev + Math.floor(rate));
 
-        // Randomly push a new candidate to the live feed
         const names = ["Ahmad Al-Mansouri", "Clara Oswald", "David Tennant", "Lina Wertmuller", "Viktor Reznov", "Salma Khoury"];
         const sources = ["WP Uploads CDN", "Internet Archive CDX", "Bing Image Engine", "Yandex Demographic Index"];
 
@@ -58,7 +56,7 @@ export default function Monitoring() {
 
         setLiveFeed(prev => [
           { id: Math.random().toString(), name: randomName, source: randomSource, confidence: randomConf, time: nowStr },
-          ...prev.slice(0, 7) // Keep top 8 items
+          ...prev.slice(0, 7)
         ]);
       }
     }, 2500);
@@ -147,7 +145,10 @@ export default function Monitoring() {
         </Card>
       </div>
 
-      {/* STAGE 2: Controls and Live Feed */}
+      {/* STAGE 2: Adaptive Browser Agent Settings & Social CRUD */}
+      <AdaptiveAgentPanel />
+
+      {/* STAGE 3: Controls and Live Feed */}
       <div className="grid md:grid-cols-12 gap-6">
         {/* LEFT: Controls & Source Distribution (5 cols) */}
         <div className="md:col-span-5 space-y-6">
