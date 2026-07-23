@@ -1,0 +1,54 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# FaceVision Enterprise Platform — Docker Compose Stack
+# Multi-Tenant, High-Performance Biometric Identity & Operations Platform
+# ═══════════════════════════════════════════════════════════════════════════
+
+version: '3.8'
+
+services:
+  # ── 1. Enterprise Vector Database (PostgreSQL 16 + pgvector) ───────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: facevision-db
+    restart: always
+    environment:
+      POSTGRES_DB: facevision_db
+      POSTGRES_USER: facevision_admin
+      POSTGRES_PASSWORD: facevision_secure_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U facevision_admin -d facevision_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── 2. FaceVision Core Server & Engine ─────────────────────────────────────
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: facevision-api
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: "8080"
+      NODE_ENV: "production"
+      DATABASE_URL: "postgresql://facevision_admin:facevision_secure_password_2026@postgres:5432/facevision_db"
+      INSIGHTFACE_MODEL_PACK: "buffalo_l"
+      RATE_LIMIT_MAX: "1000"
+      CORS_ORIGINS: "*"
+    ports:
+      - "8080:8080"
+    volumes:
+      - model_cache:/app/models
+
+volumes:
+  postgres_data:
+    driver: local
+  model_cache:
+    driver: local

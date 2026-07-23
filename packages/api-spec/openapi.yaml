@@ -1,0 +1,697 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Face Recognition System API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: persons
+    description: Enrolled persons management
+  - name: recognition
+    description: Face recognition operations
+  - name: learning
+    description: Daily learning pipeline
+  - name: stats
+    description: System statistics and analytics
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /persons:
+    get:
+      operationId: listPersons
+      tags: [persons]
+      summary: List all enrolled persons
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: search
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: List of persons
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonList"
+    post:
+      operationId: enrollPerson
+      tags: [persons]
+      summary: Enroll a new person
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonInput"
+      responses:
+        "201":
+          description: Person enrolled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+
+  /persons/{id}:
+    get:
+      operationId: getPerson
+      tags: [persons]
+      summary: Get a person by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Person details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deletePerson
+      tags: [persons]
+      summary: Remove a person from the database
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+
+  /persons/{id}/faces:
+    post:
+      operationId: addFaceToPerson
+      tags: [persons]
+      summary: Add a face image to an existing person
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FaceImageInput"
+      responses:
+        "201":
+          description: Face added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FaceEmbedding"
+        "404":
+          description: Person not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /recognition/identify:
+    post:
+      operationId: identifyFace
+      tags: [recognition]
+      summary: Identify a face in an uploaded image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecognitionInput"
+      responses:
+        "200":
+          description: Recognition result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecognitionResult"
+
+  /recognition/logs:
+    get:
+      operationId: listRecognitionLogs
+      tags: [recognition]
+      summary: Get recent recognition activity log
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Recent recognition logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecognitionLog"
+
+  /learning/trigger:
+    post:
+      operationId: triggerLearning
+      tags: [learning]
+      summary: Manually trigger the daily learning pipeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LearningTriggerInput"
+      responses:
+        "200":
+          description: Learning run started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningRun"
+
+  /learning/status:
+    get:
+      operationId: getLearningStatus
+      tags: [learning]
+      summary: Get current learning pipeline status
+      responses:
+        "200":
+          description: Learning status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningStatus"
+
+  /learning/runs:
+    get:
+      operationId: listLearningRuns
+      tags: [learning]
+      summary: List past learning runs
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of learning runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LearningRun"
+
+  /stats/overview:
+    get:
+      operationId: getStatsOverview
+      tags: [stats]
+      summary: Overall system statistics
+      responses:
+        "200":
+          description: System statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsOverview"
+
+  /stats/accuracy:
+    get:
+      operationId: getAccuracyMetrics
+      tags: [stats]
+      summary: Get accuracy metrics
+      responses:
+        "200":
+          description: Accuracy metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccuracyMetrics"
+
+  /stats/benchmark:
+    get:
+      operationId: runBenchmark
+      tags: [stats]
+      summary: Run internal benchmark
+      responses:
+        "200":
+          description: Benchmark results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalPairs:
+                    type: integer
+                  eerEstimate:
+                    type: object
+                    additionalProperties: true
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+
+
+  /stats/growth:
+    get:
+      operationId: getDatabaseGrowth
+      tags: [stats]
+      summary: Database growth over time
+      responses:
+        "200":
+          description: Growth data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrowthPoint"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    DeleteResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        id:
+          type: integer
+      required:
+        - success
+        - id
+
+    Person:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nameAr:
+          type: ["string", "null"]
+        source:
+          type: string
+        faceCount:
+          type: integer
+        thumbnailUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - source
+        - faceCount
+        - createdAt
+
+    PersonDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nameAr:
+          type: ["string", "null"]
+        source:
+          type: string
+        faceCount:
+          type: integer
+        thumbnailUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        faces:
+          type: array
+          items:
+            $ref: "#/components/schemas/FaceEmbedding"
+        recognitionCount:
+          type: integer
+        lastSeenAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - id
+        - name
+        - source
+        - faceCount
+        - createdAt
+        - faces
+        - recognitionCount
+
+    PersonList:
+      type: object
+      properties:
+        persons:
+          type: array
+          items:
+            $ref: "#/components/schemas/Person"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - persons
+        - total
+        - page
+        - limit
+
+    PersonInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        nameAr:
+          type: ["string", "null"]
+        source:
+          type: string
+          default: "manual"
+        imageBase64:
+          type: ["string", "null"]
+      required:
+        - name
+
+    FaceEmbedding:
+      type: object
+      properties:
+        id:
+          type: integer
+        personId:
+          type: integer
+        imageUrl:
+          type: ["string", "null"]
+        confidence:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - personId
+        - confidence
+        - createdAt
+
+    FaceImageInput:
+      type: object
+      properties:
+        imageBase64:
+          type: string
+          description: Base64-encoded image
+        imageUrl:
+          type: ["string", "null"]
+      required:
+        - imageBase64
+
+    RecognitionInput:
+      type: object
+      properties:
+        imageBase64:
+          type: string
+          description: Base64-encoded image to identify
+        threshold:
+          type: number
+          default: 0.6
+      required:
+        - imageBase64
+
+    RecognitionCandidate:
+      type: object
+      properties:
+        person:
+          $ref: "#/components/schemas/Person"
+        confidence:
+          type: number
+        distance:
+          type: number
+      required:
+        - person
+        - confidence
+        - distance
+
+    RecognitionResult:
+      type: object
+      properties:
+        recognized:
+          type: boolean
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecognitionCandidate"
+        bestMatch:
+          $ref: "#/components/schemas/RecognitionCandidate"
+        processingTimeMs:
+          type: number
+        facesDetected:
+          type: integer
+        logId:
+          type: ["integer", "null"]
+        qualityScore:
+          type: number
+        totalDims:
+          type: integer
+        algorithmVersion:
+          type: string
+        allFaces:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      required:
+        - recognized
+        - candidates
+        - processingTimeMs
+        - facesDetected
+
+    RecognitionLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        personId:
+          type: ["integer", "null"]
+        personName:
+          type: ["string", "null"]
+        confidence:
+          type: ["number", "null"]
+        recognized:
+          type: boolean
+        processingTimeMs:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - recognized
+        - processingTimeMs
+        - createdAt
+
+    LearningTriggerInput:
+      type: object
+      properties:
+        source:
+          type: string
+          enum: [lfw, vggface2, web_scrape, all]
+          default: lfw
+        maxImages:
+          type: integer
+          default: 500
+      required:
+        - source
+
+    LearningRun:
+      type: object
+      properties:
+        id:
+          type: integer
+        source:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        facesAdded:
+          type: integer
+        personsAdded:
+          type: integer
+        errorMessage:
+          type: ["string", "null"]
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - id
+        - source
+        - status
+        - facesAdded
+        - personsAdded
+        - startedAt
+
+    LearningStatus:
+      type: object
+      properties:
+        isRunning:
+          type: boolean
+        currentRun:
+          $ref: "#/components/schemas/LearningRun"
+        lastRun:
+          $ref: "#/components/schemas/LearningRun"
+        nextScheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        totalRunsToday:
+          type: integer
+      required:
+        - isRunning
+        - totalRunsToday
+
+    StatsOverview:
+      type: object
+      properties:
+        totalPersons:
+          type: integer
+        totalFaceEmbeddings:
+          type: integer
+        totalRecognitions:
+          type: integer
+        successfulRecognitions:
+          type: integer
+        recognitionRate:
+          type: number
+        avgConfidence:
+          type: number
+        totalLearningRuns:
+          type: integer
+        facesLearnedToday:
+          type: integer
+        lastLearningAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - totalPersons
+        - totalFaceEmbeddings
+        - totalRecognitions
+        - successfulRecognitions
+        - recognitionRate
+        - avgConfidence
+        - totalLearningRuns
+        - facesLearnedToday
+
+    AccuracyMetrics:
+      type: object
+      properties:
+        precision:
+          type: number
+        recall:
+          type: number
+        f1Score:
+          type: number
+        falsePositiveRate:
+          type: number
+        avgProcessingTimeMs:
+          type: number
+        confidenceDistribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConfidenceBucket"
+      required:
+        - precision
+        - recall
+        - f1Score
+        - falsePositiveRate
+        - avgProcessingTimeMs
+        - confidenceDistribution
+
+    ConfidenceBucket:
+      type: object
+      properties:
+        range:
+          type: string
+        count:
+          type: integer
+      required:
+        - range
+        - count
+
+    GrowthPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        personsCount:
+          type: integer
+        embeddingsCount:
+          type: integer
+        recognitionsCount:
+          type: integer
+      required:
+        - date
+        - personsCount
+        - embeddingsCount
+        - recognitionsCount
