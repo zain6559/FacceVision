@@ -5,3 +5,6 @@ export * from "./selfCalibration.js";
 export * from "./biometricEncryption.js";
 export * from "./saliencyHeatmap.js";
 export * from "./deepfakeDetector.js";
+export * from "./gaitFusion.js";
+export * from "./kinshipEngine.js";
+export * from "./ageNormalizer.js";
