@@ -25,8 +25,13 @@ export type Person = typeof personsTable.$inferSelect;
 export const faceEmbeddingsTable = pgTable("face_embeddings", {
   id: serial("id").primaryKey(),
   personId: integer("person_id").notNull().references(() => personsTable.id, { onDelete: "cascade" }),
-  // v4 fused ensemble: CLBP(128)+MSLBPH(128)+Gabor(128)+LPQ(128)+WLD(64) = 576-dim, L2-normalized
-  embedding: vector("embedding", { dimensions: 576 }).notNull(),
+  // Unified 512-dimensional vector standard (Matching SOTA buffalo_l ArcFace)
+  embedding: vector("embedding", { dimensions: 512 }).notNull(),
+  // Tracking and integrity attributes for biometric validation
+  embeddingVersion: text("embedding_version").notNull().default("v5-fused"),
+  modelVersion: text("model_version").notNull().default("buffalo_l"),
+  vectorDim: integer("vector_dim").notNull().default(512),
+
   // Per-algorithm sub-embeddings
   lbpEmbedding:  jsonb("lbp_embedding").$type<number[]>(),   // Multi-Scale LBPH 128-dim [Ahonen 2006]
   hogEmbedding:  jsonb("hog_embedding").$type<number[]>(),   // Gabor wavelets 128-dim   [Liu 2002]
