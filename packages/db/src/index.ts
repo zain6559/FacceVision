@@ -278,3 +278,4 @@ export async function safeDbQuery<T>(
 
 export * from "./schema/index.js";
 export * from "./vector/index.js";
+export * as security from "./schema/security/index.js";
