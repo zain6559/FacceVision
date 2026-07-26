@@ -1,5 +1,12 @@
+/**
+ * FaceVision — Benchmark Tools
+ * 
+ * This module is for evaluation and testing purposes only.
+ * It should NOT be part of the production runtime.
+ */
+
 import { db, faceEmbeddingsTable } from "@workspace/db";
-import { cosineSimilarity } from "./faceRecognition.js";
+import { cosineSimilarity } from "../../lib/faceRecognition.js";
 
 interface ScorePair {
   score: number;
