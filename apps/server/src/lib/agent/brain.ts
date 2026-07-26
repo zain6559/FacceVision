@@ -1,3 +1,30 @@
+/**
+ * FaceVision — Agent System
+ * 
+ * Goal-driven biometric intelligence agent.
+ * 
+ * Architecture:
+ * ┌─────────────────────────────────────────────────────────────────┐
+ * │                    BiometricAgent                               │
+ * ├─────────────────────────────────────────────────────────────────┤
+ * │   Request ──► [Goal Engine] ──► [Planner] ──► [Executor]     │
+ * │                                                                 │
+ * │   Memory: Working │ Session │ Recognition │ Knowledge │ Long   │
+ * │   Learning: Feedback → Examples → Training → Updates             │
+ * │   Explainability: Evidence → Confidence → Reasoning → Audit       │
+ * └─────────────────────────────────────────────────────────────────┘
+ * 
+ * @deprecated Use BiometricAgent from './core/runtime' instead
+ */
+
+// Re-export the new agent system for backward compatibility
+export { BiometricAgent, createAgent } from "./core/runtime/index.js";
+export type { AgentConfig } from "./core/runtime/index.js";
+
+// Re-export core components
+export * from "./core/index.js";
+
+// Legacy exports for backward compatibility
 export interface BrainModelConfig {
   mode: "EXTERNAL_API" | "LOCAL_GGUF";
   apiEndpoint?: string;
@@ -11,10 +38,7 @@ export interface BrainModelConfig {
 }
 
 /**
- * Agent Brain & Inference Runtime (v5.0 Sovereign Core)
- *
- * Manages dual-inference configurations for visual reasoning, decision loops (ReAct),
- * and anti-bot bypass path planning, supporting OpenAI/Gemini endpoints or local GGUF models.
+ * @deprecated Use BiometricAgent instead
  */
 export class AgentBrain {
   private activeConfig: BrainModelConfig = {
@@ -27,41 +51,18 @@ export class AgentBrain {
     temperature: 0.2
   };
 
-  /**
-   * Re-loads or updates the active inference configurations
-   */
   public async configureBrain(config: Partial<BrainModelConfig>): Promise<void> {
     this.activeConfig = { ...this.activeConfig, ...config };
-    console.log(`[Agent Brain] Configured successfully. Inference Mode: ${this.activeConfig.mode} | Model: ${this.activeConfig.modelId || this.activeConfig.ggufPath || "default"}`);
-
-    if (this.activeConfig.mode === "LOCAL_GGUF") {
-      console.log(`[Agent Brain] Binding to local llama-cpp: ${this.activeConfig.ggufPath}. Offloading ${this.activeConfig.nGpuLayers} GPU layers, using ${this.activeConfig.cpuThreads} CPU threads.`);
-    }
+    console.log(`[Agent Brain] Configured. Mode: ${this.activeConfig.mode} | Model: ${this.activeConfig.modelId}`);
   }
 
-  /**
-   * Runs an inference decision or visual path planning step
-   */
   public async executeInference(prompt: string, imageBase64?: string): Promise<string> {
     console.log(`[Agent Brain] Executing inference for prompt: "${prompt.slice(0, 50)}..."`);
-
-    if (this.activeConfig.mode === "EXTERNAL_API") {
-      // Return simulated planning response mimicking OpenAI/Anthropic visual intelligence
-      return JSON.stringify({
-        decision: "CLICK_LANDMARK_OR_AVATAR",
-        actionPath: "div[role='dialog'] img[src*='profile']",
-        confidence: 0.96,
-        reasoning: "Detected target profile avatar in central viewport feed. Initiating stealth-cursor drag to face crops."
-      });
-    } else {
-      // Local vision GGUF (e.g. Qwen2-VL) path planning simulation
-      return JSON.stringify({
-        decision: "SLIDE_CAPTCHA_TRACK",
-        dragOffsets: [120, 24],
-        confidence: 0.91,
-        reasoning: "Local GGUF vision analysis mapped CAPTCHA slider target notch at delta X=120px. Adjusting ghost-cursor drag dynamics."
-      });
-    }
+    return JSON.stringify({
+      decision: "PLANNED",
+      confidence: 0.9,
+      reasoning: "Legacy mode - use BiometricAgent for full capabilities"
+    });
   }
 
   public getActiveConfig(): BrainModelConfig {
