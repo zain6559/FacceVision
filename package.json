@@ -2,27 +2,29 @@
   "name": "face-learn-net",
   "version": "0.0.0",
   "license": "MIT",
+  "description": "FaceVision - Face Recognition System",
   "scripts": {
     "dev": "npm run dev:web",
     "dev:all": "concurrently \"npm run dev:web\" \"npm run dev:server\"",
-    "dev:web": "cd apps/web && npm run dev",
-    "dev:server": "cd apps/server && npm run dev",
+    "dev:web": "cd apps/web && npx vite --config vite.config.ts --host 0.0.0.0",
+    "dev:server": "cd apps/server && npx tsx --watch ./src/index.ts",
     "build": "npm run build:web && npm run build:server",
-    "build:web": "cd apps/web && npm run build",
-    "build:server": "cd apps/server && npm run build",
-    "install:all": "npm install && cd apps/web && npm install && cd ../server && npm install && cd ../../packages/db && npm install && cd ../api-client && npm install && cd ../api-zod && npm install && cd ../api-client-react && npm install",
+    "build:web": "cd apps/web && npx vite build --config vite.config.ts",
+    "build:server": "cd apps/server && node ./build.mjs",
+    "install:all": "npm install && cd apps/web && npm install && cd ../server && npm install && cd ../packages/db && npm install && cd ../api-client && npm install && cd ../api-zod && npm install && cd ../api-client-react && npm install",
     "typecheck": "npm run typecheck:libs && npm run typecheck:apps",
     "typecheck:libs": "cd packages/db && npx tsc --noEmit && cd ../api-client && npx tsc --noEmit && cd ../api-zod && npx tsc --noEmit",
     "typecheck:apps": "cd apps/web && npx tsc --noEmit && cd ../server && npx tsc --noEmit",
     "codegen": "cd packages/api-zod && npm run codegen",
     "db:push": "cd packages/db && npm run push",
     "format": "npx prettier --write .",
-    "clean": "rm -rf apps/*/dist apps/*/.turbo packages/*/dist node_modules apps/*/node_modules packages/*/node_modules"
+    "clean": "rm -rf apps/*/dist apps/*/.turbo packages/*/dist apps/*/node_modules packages/*/node_modules"
   },
   "private": true,
   "devDependencies": {
     "prettier": "^3.9.5",
     "typescript": "~5.9.3",
-    "concurrently": "^8.2.2"
+    "concurrently": "^9.0.0",
+    "tsx": "^4.21.0"
   }
 }
